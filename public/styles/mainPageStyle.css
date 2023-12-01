@@ -1,20 +1,79 @@
+*{
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Poppins", sans-serif;
+}
+
 body {
+  min-height: 100vh;
+  background: url('../images/wallpaper3.jpg') no-repeat;
+  background-size: cover;
+  background-position: center;
   font-family: 'Arial', sans-serif;
   margin: 0;
   padding: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
   align-items: center;
-
+  box-sizing: border-box;
+  
 }
 
 header {
-  background-color: #4CAF50;
-  padding: 1em;
-  text-align: center;
-  color: white;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  padding: 20px 100px;
+  background: #4CAF50;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 100;
+}
+
+.logo{
+  font-size: 32px;
+  color: #fff;
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.navbar a{
+  position: relative;
+  font-size: 32px;
+  color: #fff;
+  font-weight: 500;
+  text-decoration: none;
+  margin-left: 40px;
+}
+
+.navbar a::before{
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: #fff;
+  transition: .3s;
+}
+
+.navbar a:hover::before{
+  width: 100%;
+}
+
+.selected{
+  color: blue;
 }
 
 main {
   padding: 2em;
+  flex: 1;
+  width: 60%;
+  
 }
 
 .container {
@@ -22,9 +81,10 @@ main {
   display: flex;
   justify-content: center;
   text-align: center;
-  align-items: center;
   position: relative;
-  align-self: center;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
 }
 
 .form-container {
@@ -57,20 +117,7 @@ button {
   font-size: 22px;
 }
 
-.result-container {
-  width: 100%;
-  background-color: #f2f2f2;
-  padding: 1em;
-  border-radius: 8px;
-}
 
-footer {
-  background-color: #4CAF50;
-  padding: 1em;
-  text-align: center;
-  color: white;
-  
-}
 .input-images {
   display: flex;
   flex-wrap: wrap;
@@ -94,7 +141,7 @@ footer {
 }
 
 #training-config{
-  flex: 1; margin-left: 20px;
+  flex: 1; 
 }
 
 .custom-select {
