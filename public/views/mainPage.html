@@ -13,87 +13,57 @@
     <main>
         <div class="container">
             <div class="form-container">
-                <h2>Data Entry</h2>
-                <label for="data-choice">Choose Data Input Method:</label>
-                <select id="data-choice" onchange="toggleDataInput()">
-                    <option value="dynamic">Generate Dynamic Data</option>
-                    <option value="file">Upload Data from File</option>
-                </select>
+                <div class="data-entry" style="flex: 1;">
+                    <h2>Enter Data</h2>
+                    <label for="data-input-choice">Data Input Method:</label>
+                    <select id="data-input-choice" onchange="toggleDataInput()">
+                        <option value="manual" selected>Manual Entry</option>
+                        <option value="file">Upload Data from File</option>
+                    </select>
 
-                <div id="dynamic-data" style="display: block;">
-                    <!-- Display input images here -->
-                    <div class="input-images" id="input-images">
-                        <!-- Images will be dynamically added here -->
+                    <div id="manual-entry">
+                        <label for="sweetness">Sweetness (1-10):</label>
+                        <input type="number" id="sweetness" min="1" max="10" value="1">
+
+                        <label for="color">Color:</label>
+                        <select id="color">
+                            <option value="red">Red</option>
+                            <option value="blue">Blue</option>
+                            <option value="orange">Orange</option>
+                            <option value="yellow">Yellow</option>
+                        </select>
+
+                        <label for="expected">Expected output:</label>
+                        <select id="expected">
+                            <option value="apple">Apple</option>
+                            <option value="banana">Banana</option>
+                            <option value="orange">Orange</option>
+                            <option value="grape">Grape</option>
+                        </select>
                     </div>
-                    <button onclick="enterData()">Enter Data</button>
-                </div>
-                <div id="file-data" style="display: none;">
-                    <!-- Display file upload here -->
-                    <label for="data-file">Upload Data File (TXT):</label>
-                    <input type="file" id="data-file" accept=".txt">
-                    <button onclick="uploadFile()">Upload File</button>
-                </div>
-                <div id="dynamic-data" style="display: block;">
-                    <label for="sweetness">Sweetness (1-10):</label>
-                    <input type="number" id="sweetness" min="1" max="10">
 
-                    <label for="color">Color:</label>
-                    <input type="text" id="color">
-
-                    <button onclick="enterData()">Enter Data</button>
+                    <div id="file-entry" >
+                        <label for="data-file">Upload Data File (TXT):</label>
+                        <input type="file" id="data-file" accept=".txt">
+                    </div>
                 </div>
 
-                <div id="file-data" style="display: none;">
-                    <label for="data-file">Upload Data File (TXT):</label>
-                    <input type="file" id="data-file" accept=".txt">
+                <div id="training-config">
+                    <h2>Training Configuration</h2>
+                    <label for="learning-rate">Learning Rate:</label>
+                    <input type="number" step="0.01" id="learning-rate" value="0.01">
 
-                    <button onclick="uploadFile()">Upload File</button>
+                    <label for="max-epochs">Maximum Number of Epochs:</label>
+                    <input type="number" id="max-epochs" min="1" value="100">
+
+                    <label for="neorons">Number of Nueorons:</label>
+                    <input type="number" step="1" min="1" id="neorons" value="5">
+
+                    <button onclick="trainNeuralNetwork()">Train Neural Network</button>
                 </div>
-            </div>
-
-            <div class="form-container">
-                <h2>Neural Network Configuration</h2>
-                <label for="hidden-neurons">Number of Neurons in Hidden Layer:</label>
-                <input type="number" id="hidden-neurons" min="1" value="5">
-
-                <label for="activation-function">Activation Function:</label>
-                <select id="activation-function">
-                    <option value="sigmoid">Sigmoid</option>
-                    <option value="relu">ReLU</option>
-                    <!-- Add more activation functions as needed -->
-                </select>
-
-                <button onclick="buildNeuralNetwork()">Build Neural Network</button>
-            </div>
-
-            <div class="form-container">
-                <h2>Training Configuration</h2>
-                <label for="learning-rate">Learning Rate:</label>
-                <input type="number" step="0.01" id="learning-rate" value="0.01">
-
-                <label for="max-epochs">Maximum Number of Epochs:</label>
-                <input type="number" id="max-epochs" min="1" value="100">
-
-                <label for="goal">Goal:</label>
-                <input type="number" step="0.01" id="goal" value="0.1">
-
-                <button onclick="trainNeuralNetwork()">Train Neural Network</button>
             </div>
         </div>
 
-        <div class="result-container">
-            <h2>System Performance</h2>
-            <p id="accuracy">Accuracy: N/A</p>
-
-            <h2>Test Model</h2>
-            <label for="test-sweetness">Sweetness (1-10):</label>
-            <input type="number" id="test-sweetness" min="1" max="10">
-
-            <label for="test-color">Color:</label>
-            <input type="text" id="test-color">
-
-            <button onclick="testModel()">Test Model</button>
-        </div>
     </main>
     <footer>
         <p>© 2023 Fruit Recognition Project</p>
