@@ -1,0 +1,173 @@
+*{
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Poppins", sans-serif;
+}
+
+body {
+  min-height: 100vh;
+  background: url('../images/wallpaper3.jpg') no-repeat;
+  background-size: cover;
+  background-position: bottom ;
+  font-family: 'Arial', sans-serif;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  box-sizing: border-box;
+  
+}
+
+header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  padding: 20px 100px;
+  background: #4CAF50;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 100;
+}
+
+.logo{
+  font-size: 32px;
+  color: #fff;
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.navbar a{
+  position: relative;
+  font-size: 32px;
+  color: #fff;
+  font-weight: 500;
+  text-decoration: none;
+  margin-left: 40px;
+}
+
+.navbar a::before{
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: #fff;
+  transition: .3s;
+}
+
+.navbar a:hover::before{
+  width: 100%;
+}
+
+.selected{
+  color: blue;
+}
+
+main {
+  margin-top: auto;
+  padding: 2em;
+  flex: 1;
+  width: 60%;
+  
+}
+
+.container {
+  margin: 0 auto;
+  display: flex;
+  justify-content: center;
+  text-align: center;
+  position: relative;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.form-container {
+  width: 45%;
+  background-color: #f2f2f2;
+  padding: 1em;
+  margin-bottom: 1em;
+  border-radius: 8px;
+}
+
+label {
+  display: block;
+  margin-bottom: 0.5em;
+}
+
+input, select {
+  width: 100%;
+  padding: 0.5em;
+  margin-bottom: 1em;
+  box-sizing: border-box;
+}
+
+button {
+  background-color: #4CAF50;
+  color: white;
+  padding: 0.5em 1em;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 22px;
+}
+
+
+.input-images {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.input-images img {
+  width: 50px; 
+  height: 50px;
+  margin: 5px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+#file-entry{
+  display: block;
+}
+
+#training-config{
+  flex: 1; 
+}
+
+.custom-select {
+  position: relative;
+  width: 100%;
+}
+
+.select-wrapper {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+}
+
+select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+  outline: none;
+}
+
+button:hover {
+  background-color: green; 
+}
+
+button:active {
+  background-color: #1e7035; 
+}

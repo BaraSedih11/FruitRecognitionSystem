@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fruit Recognition</title>
+    <link rel="stylesheet" href="../styles/inputPageStyle.css">
+</head>
+<body>
+    <header class="header">
+        <a href="" class="logo">Fruit Recognition Using Neural Network Classifier</a>
+
+        <nav class="navbar">
+            <a href="/main/input" class="selected" style="color: black; font-weight: 700;">Input</a>
+            <a href="/main/output" onclick="sendDataToServer()">Output</a>
+        </nav>
+    </header>
+    <main>
+        <div class="container">
+            <div class="form-container">
+                <div class="data-entry" style="flex: 1;">
+                    <h2>Enter Data</h2>
+                    <br>
+                    <div id="file-entry" >
+                        <label for="data-file">Upload Data File (.txt):</label>
+                        <input type="file" id="data-file" accept=".txt">
+                    </div>
+                    
+                </div>
+
+                <div id="training-config">
+                    <h2>Training Configuration</h2>
+                    <br>
+                    <label for="learning-rate">Learning Rate:</label>
+                    <input type="number" step="0.01" id="learning-rate" value="0.01">
+
+                    <label for="max-epochs">Maximum Number of Epochs:</label>
+                    <input type="number" id="max-epochs" min="1" value="100">
+
+                    <label for="neorons">Number of Nueorons:</label>
+                    <input type="number" step="1" min="1" id="neorons" value="5">
+
+                    <button onclick="trainNeuralNetwork()">Train Neural Network</button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script src="../scripts/inputPageScript.js"></script>
+</body>
+</html>
