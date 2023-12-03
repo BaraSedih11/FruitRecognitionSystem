@@ -1,14 +1,18 @@
 let trainingData = [];
+let learningRate;
+let numberOfNeurons;
+let maxEpochs;
+let activationFunction;
 
 function sendDataToServer() {
-    console.log('Sending data to the server...');
+    console.log('Sending data to the server...', { trainingData, learningRate, numberOfNeurons, maxEpochs, activationFunction });
 
     fetch('/main/sendData', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ trainingData }),
+        body: JSON.stringify({ trainingData, learningRate, numberOfNeurons, maxEpochs, activationFunction }),
     })
     .then(response => {
         if (response.ok) {
@@ -23,69 +27,54 @@ function sendDataToServer() {
     });
 }
 
-function trainNeuralNetwork() {
-    const learningRateInput = document.getElementById('learning-rate');
-    const maxEpochsInput = document.getElementById('max-epochs');
-    const numberOfNeuronsInput = document.getElementById('neorons');
-
-    if (!learningRateInput || !maxEpochsInput || !numberOfNeuronsInput) {
-        console.error('One or more input elements not found');
-        return;
-    }
-
-    const learningRate = parseFloat(learningRateInput.value);
-    const maxEpochs = parseInt(maxEpochsInput.value);
-    const numberOfNeurons = parseInt(numberOfNeuronsInput.value);
-
+function getTrainingData() {
     const fileInput = document.getElementById('data-file');
-    const file = fileInput.files[0];
-
-    if (file) {
+    
+    return new Promise((resolve, reject) => {
         const reader = new FileReader();
 
-        reader.onload = function (e) {
-            const fileContent = e.target.result; 
+        reader.onload = function (event) {
+            try {
+                const content = event.target.result;
+                const lines = content.split('\n');
 
-            const lines = fileContent.split('\n');
+                const formattedTrainingData = lines.map(line => {
+                    const [sweetness, color, output] = line.trim().split(' ');
+                    return {
+                        input: [parseFloat(sweetness), color],
+                        output: output
+                    };
+                });
 
-            console.log('Number of lines:', lines.length);
-
-            lines.forEach((line, index) => {
-                console.log(`Processing line ${index + 1}: ${line}`);
-
-                const values = line.trim().split(/\s+/);
-
-                console.log('Values:', values);
-
-                if (values.length >= 3) {
-                    const sweetnessData = parseFloat(values[0]);
-                    const colorData = values[1].trim();
-                    const expectedOutputData = values[2].trim();
-
-                    console.log('sweetnessData:', sweetnessData);
-                    console.log('colorData:', colorData);
-                    console.log('expectedOutputData:', expectedOutputData);
-
-                    if (!isNaN(sweetnessData) && !isNaN(expectedOutputData)) {
-                        const inputData = {
-                            sweetness: sweetnessData,
-                            color: colorData,
-                            expectedOutput: expectedOutputData,
-                            learningRate,
-                            maxEpochs,
-                            numberOfNeurons
-                        };
-
-                        trainingData.push(inputData);
-
-                        console.log('Training Data:', inputData);
-                    }
-                }
-            });
+                resolve(formattedTrainingData);
+            } catch (error) {
+                reject(error);
+            }
         };
 
-        reader.readAsText(file);
-    }
+        reader.onerror = function (error) {
+            reject(error);
+        };
 
-    sendDataToServer();
+        reader.readAsText(fileInput.files[0]);
+    });
 }
+
+document.getElementById('submit').addEventListener('click', function() {
+    const learningRateInput = document.getElementById('learning-rate');
+    const neuronsInput = document.getElementById('neurons');
+    const maxEpochsInput = document.getElementById('max-epochs');
+    const activationFunctionInput = document.getElementById('activationFunction');
+
+    learningRate = parseFloat(learningRateInput.value);
+    numberOfNeurons = parseInt(neuronsInput.value);
+    maxEpochs = parseInt(maxEpochsInput.value);
+    activationFunction = activationFunctionInput.options[activationFunctionInput.selectedIndex].text;
+
+    getTrainingData().then(data => {
+        trainingData = data;
+        sendDataToServer();
+    }).catch(error => {
+        console.error('Error reading training data:', error);
+    });
+});
