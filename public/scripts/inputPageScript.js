@@ -2,17 +2,18 @@ let trainingData = [];
 let learningRate;
 let numberOfNeurons;
 let maxEpochs;
-let activationFunction;
+let activationFunctionForHidden;
+let activationFunctionForOutput;
 
 function sendDataToServer() {
-    console.log('Sending data to the server...', { trainingData, learningRate, numberOfNeurons, maxEpochs, activationFunction });
+    console.log('Sending data to the server...', { trainingData, learningRate, numberOfNeurons, maxEpochs, activationFunctionForHidden, activationFunctionForOutput });
 
     fetch('/main/sendData', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ trainingData, learningRate, numberOfNeurons, maxEpochs, activationFunction }),
+        body: JSON.stringify({ trainingData, learningRate, numberOfNeurons, maxEpochs, activationFunctionForHidden, activationFunctionForOutput }),
     })
     .then(response => {
         if (response.ok) {
@@ -64,12 +65,14 @@ document.getElementById('submit').addEventListener('click', function() {
     const learningRateInput = document.getElementById('learning-rate');
     const neuronsInput = document.getElementById('neurons');
     const maxEpochsInput = document.getElementById('max-epochs');
-    const activationFunctionInput = document.getElementById('activationFunction');
+    const activationFunctionForHiddenInput = document.getElementById('activationFunctionForHidden');
+    const activationFunctionForOutputInput = document.getElementById('activationFunctionForOutput');
 
     learningRate = parseFloat(learningRateInput.value);
     numberOfNeurons = parseInt(neuronsInput.value);
     maxEpochs = parseInt(maxEpochsInput.value);
-    activationFunction = activationFunctionInput.options[activationFunctionInput.selectedIndex].text;
+    activationFunctionForHidden = activationFunctionForHiddenInput.options[activationFunctionForHiddenInput.selectedIndex].text;
+    activationFunctionForOutput = activationFunctionForOutputInput.options[activationFunctionForOutputInput.selectedIndex].text;
 
     getTrainingData().then(data => {
         trainingData = data;

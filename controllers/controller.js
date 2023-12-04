@@ -10,7 +10,8 @@ exports.getOutputPage = (req, res) => {
         learningRate : req.session.learningRate,
         maxEpochs : req.session.maxEpochs,
         numberOfNeurons : req.session.numberOfNeurons,
-        activationFunction : req.session.activationFunction,
+        activationFunctionForHidden : req.session.activationFunctionForHidden,
+        activationFunctionForOutput : req.session.activationFunctionForOutput,
     });
 };
 
@@ -21,7 +22,8 @@ exports.sendData = (req, res) => {
     const learningRate = req.body.learningRate;
     const maxEpochs = req.body.maxEpochs;
     const numberOfNeurons = req.body.numberOfNeurons;
-    const activationFunction = req.body.activationFunction;
+    const activationFunctionForHidden = req.body.activationFunctionForHidden;
+    const activationFunctionForOutput = req.body.activationFunctionForOutput;
 
     // Check if trainingData is an object and not empty before storing in the session
     if (trainingData && typeof trainingData === 'object' && Object.keys(trainingData).length > 0) {
@@ -29,7 +31,8 @@ exports.sendData = (req, res) => {
         req.session.learningRate = learningRate;
         req.session.numberOfNeurons = numberOfNeurons;
         req.session.maxEpochs = maxEpochs;
-        req.session.activationFunction = activationFunction;
+        req.session.activationFunctionForHidden = activationFunctionForHidden;
+        req.session.activationFunctionForOutput = activationFunctionForOutput;
 
         // Send response with the required data
         res.json({
@@ -37,7 +40,8 @@ exports.sendData = (req, res) => {
             learningRate: req.session.learningRate,
             numberOfNeurons: req.session.numberOfNeurons,
             maxEpochs: req.session.maxEpochs,
-            activationFunction: req.session.activationFunction,
+            activationFunctionForHidden: req.session.activationFunctionForHidden,
+            activationFunctionForOutput: req.session.activationFunctionForOutput,
         });
         
     } else {

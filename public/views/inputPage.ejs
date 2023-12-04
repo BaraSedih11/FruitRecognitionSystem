@@ -37,16 +37,21 @@
                     <input type="number" step="0.01" id="learning-rate" value="0.01">
 
                     <label for="max-epochs">Maximum Number of Epochs:</label>
-                    <input type="number" id="max-epochs" min="1" value="100">
+                    <input type="number" id="max-epochs" min="1" value="5">
 
                     <label for="neurons">Number of Nueorons:</label>
-                    <input type="number" step="1" min="1" id="neurons" value="5">
+                    <input type="number" step="1" min="1" id="neurons" value="2">
                     
-                    <label for="activationFunctions">Activation Functions:</label>
-                    <select name="activationFunction" id="activationFunction">
+                    <label for="activationFunctionForHidden">Activation Function For Hidden Layer:</label>
+                    <select name="activationFunctionForHidden" id="activationFunctionForHidden">
                         <option value="relU">RelU</option>
                         <option value="sigmoid">Sigmoid</option>
                         <option value="tanh">Tanh</option>
+                    </select>
+                    <label for="activationFunctionForOutput">Activation Function For Output Layer:</label>
+                    <select name="activationFunctionForOutput" id="activationFunctionForOutput">
+                        <option value="softmax">Softmax</option>
+                        <option value="sigmoid">Sigmoid</option>
                     </select>
 
                     <button id="submit">Train Neural Network</button>
