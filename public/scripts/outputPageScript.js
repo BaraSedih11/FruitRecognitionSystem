@@ -4,6 +4,7 @@ let numberOfNeurons = null;
 let numberOfEpochs = null;
 let activationFunctionForHidden = null;
 let activationFunctionForOutput = null;
+let errorCriterion = 0.0001; // or any other small positive value
 
 document.addEventListener('DOMContentLoaded', function () {
     console.log('DOMContentLoaded event fired');
@@ -60,28 +61,38 @@ function updateOutputContainer() {
 
 function processingOutput() {
     console.log('Processing output...');
-    
-    for (let epoch = 0 ; epoch < epochs ; epoch++){
-        for(let dataRow = 0 ; dataRow < inputData.length ; dataRow++){
-            //step1
+
+    for (let epoch = 0; epoch < epochs; epoch++) {
+        let totalError = 0;
+        let layer1Outputs;
+
+        for (let dataRow = 0; dataRow < inputData.length; dataRow++) {
+            // step1
             let { weightsForHidden, weightsForOutput, thresholdsForHidden, thresholdsForOutput } = Initialization(numberOfNeurons);
+            let expectedOutput = getExpectedOutputFromDataRow(inputData[dataRow]);
+            
+            // Loop until the error criterion is satisfied
+            do {
+                // step2
+                layer1Outputs = Activation(inputData[dataRow], weightsForHidden, weightsForOutput, thresholdsForHidden, thresholdsForOutput, activationFunctionForHidden, activationFunctionForOutput);
 
-            //step2
-            let actualOutput = Activation(inputData[dataRow], weightsForHidden, weightsForOutput, thresholdsForHidden, thresholdsForOutput, activationFunctionForHidden, activationFunctionForOutput);
+                console.log(`Epoch ${epoch + 1}, Example ${dataRow + 1}:`);
+                console.log('Actual Output:', layer1Outputs.actualOutput);
 
-            console.log('Acutal Output: ', actualOutput);
+                // Assuming your expected output is available in the inputData
+                expectedOutput = inputData[dataRow].output;
+                console.log('Expected Output:', expectedOutput);
 
-            //step3
-            //Training
-
-
-
+                // step3
+                totalError = WeightTraining(inputData[dataRow], weightsForHidden, weightsForOutput, layer1Outputs.actualOutput, expectedOutput, layer1Outputs.layer1Outputs);
+            } while (totalError > errorCriterion);
         }
-
-        
     }
 }
 
+function getExpectedOutputFromDataRow(dataRow) {
+    return dataRow.output;
+}
 
 function initializeWeights(rows, columns) { 
     const weights = [];
@@ -99,13 +110,13 @@ function initializeWeights(rows, columns) {
 
                 // Generate a random number in the specified range and round to one decimal place
                 randomWeight = Math.round((Math.random() * (2 * range) - range) * 10) / 10;
+                
             }
 
             // Assign the non-zero random weight to the array element
             weights[i][j] = randomWeight;
         }
     }
-
     return weights;
 }
 
@@ -187,22 +198,21 @@ function applyActivationFunctionForOutput(activationFunctionForOutput, x, output
     }
 }
 
-function getOutputForHidden(input, weights, thresholds, activationFunctionForHidden, i){
+function getOutputForHidden(inputRow, weightsForHidden, thresholdsForHidden, activationFunctionForHidden, i){
     let sum = 0;
-    
-    let x1 = getColorValue(input.color);
-    let x2 = getSweetnessValue(input.sweetness);
 
-    sum += (x1 * weights[0][i]) + (x2 * weights[1][i]) - thresholds[i];
-    
+    let x1 = getColorValue(inputRow.input[1]);
+    let x2 = getSweetnessValue(inputRow.input[0]);
+
+    sum += (x1 * weightsForHidden[0][i]) + (x2 * weightsForHidden[1][i]) - thresholdsForHidden[i];
     return applyActivationFunctionForHidden(activationFunctionForHidden, sum);
 }
 
-function getOutputForOutput(input, weights, threshold, y){
+function getOutputForOutput(input, weightsForOutput, threshold, y){
     let sum = 0;
-    
+
     for (let i = 0 ; i < input.length ; i++){
-        sum  += input[i] * weights[i][y];
+        sum  += input[i] * weightsForOutput[i][y];
     }
     sum -= threshold;
     
@@ -210,36 +220,79 @@ function getOutputForOutput(input, weights, threshold, y){
 }
 
 
-function Activation(inputRow, weightsForHidden, weightsForOutput, thresholdsForHidden, thresholdsForOutput, activationFunctionForHidden, activationFunctionForOutput){
+function Activation(inputRow, weightsForHidden, weightsForOutput, thresholdsForHidden, thresholdsForOutput, activationFunctionForHidden, activationFunctionForOutput) {
     let layer1Outputs = [];
     let layer2Outputs = [];
     let actualOutputs = [];
-    let acutalOutput = 0;
-    
+
     // Layer1
-    for (let neuron = 0 ; neuron < numberOfNeurons ; neuron++){
+    for (let neuron = 0; neuron < numberOfNeurons; neuron++) {
         let output = getOutputForHidden(inputRow, weightsForHidden, thresholdsForHidden, activationFunctionForHidden, neuron);
         layer1Outputs[neuron] = output;
     }
 
     // Layer2
-    for (let y = 0 ; y < 3 ; y++){
-        let output = getOutputForOutput(layer1Outputs, weightsForOutput, thresholdsForOutput[y], activationFunctionForOutput, y);
+    for (let y = 0; y < 3; y++) {
+        let output = getOutputForOutput(layer1Outputs, weightsForOutput, thresholdsForOutput[y], y);
         layer2Outputs[y] = output;
+
     }
 
-    //apply actication function for output layer
-    // I made another loop because softmax want all sums to be calculated
-    for(let y = 0 ; y < 3 ; y++){
+    // Apply activation function for output layer
+    // I made another loop because softmax wants all sums to be calculated
+    for (let y = 0; y < 3; y++) {
         let output = applyActivationFunctionForOutput(activationFunctionForOutput, layer2Outputs[y], layer2Outputs);
         actualOutputs[y] = output;
     }
 
-    for(let output = 0 ; output < actualOutputs.length ; output++) {
-        actualOutput = Math.max(actualOutputs[output], acutalOutput);
+    let actualOutput = actualOutputs.length > 0 ? actualOutputs[0] : 0;
+
+    for (let output = 0; output < actualOutputs.length; output++) {
+        actualOutput = Math.max(actualOutputs[output], actualOutput);
     }
 
-    return acutalOutput;
+    return { actualOutput: actualOutput, layer1Outputs: layer1Outputs };
 }
 
+function WeightTraining(inputRow, weightsForHidden, weightsForOutput, actualOutput, expectedOutput, layer1Outputs) {
+    let totalError = 0;
+
+    console.log('baraaaa');
+    console.log(layer1Outputs);
+
+    // Calculate the error gradient for the output layer
+    let gradientErrorsOutput = [];
+    for (let k = 0; k < 3; k++) {
+        let ek = expectedOutput[k] - actualOutput;
+        let gradientErrork = actualOutput * (1 - actualOutput) * ek;
+        gradientErrorsOutput[k] = gradientErrork;
+
+        // Calculate weight corrections and update weights at the output neurons
+        for (let j = 0; j < numberOfNeurons; j++) {
+            let deltaWjk = learningRate * layer1Outputs[j] * gradientErrork;
+            weightsForOutput[j][k] += deltaWjk;
+        }
+
+        // Accumulate the total error
+        totalError += Math.abs(ek);
+    }
+
+    // Calculate the error gradient for the hidden layer
+    for (let i = 0; i < numberOfNeurons; i++) {
+        let sumGradientErrorsOutput = 0;
+        for (let k = 0; k < 3; k++) {
+            sumGradientErrorsOutput += gradientErrorsOutput[k] * weightsForOutput[i][k];
+        }
+
+        let gradientErrori = layer1Outputs[i] * (1 - layer1Outputs[i]) * sumGradientErrorsOutput;
+
+        // Calculate weight corrections and update weights at the hidden neurons
+        for (let j = 0; j < 2; j++) {
+            let deltaWij = learningRate * inputRow[j] * gradientErrori;
+            weightsForHidden[j][i] += deltaWij;
+        }
+    }
+
+    return totalError;
+}
 
