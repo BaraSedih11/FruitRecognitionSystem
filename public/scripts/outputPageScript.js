@@ -212,13 +212,13 @@ function Initialization(neuronsSize){
 }
 
 function getColorValue(color){
-    if(color === 'red') return 0;
-    else if(color === 'orange') return 0.5;
-    else if(color === 'yellow') return 1;
+    if(color === 'red') return 1;
+    else if(color === 'orange') return 2;
+    else if(color === 'yellow') return 3;
 }
 
 function getSweetnessValue(sweetness){
-    return (1 - (sweetness/10));
+    return sweetness/10;
 }
 
 function applyActivationFunctionForHidden(activationFunctionForHidden, x){
@@ -298,9 +298,6 @@ function Activation(inputRow, weightsForHidden, weightsForOutput, thresholdsForH
     }
 
     actualOutputs = applyActivationFunctionForOutput(activationFunctionForOutput, 0, layer2Outputs);
-
-    // Apply softmax to the output layer
-    actualOutputs = softmax(layer2Outputs);
 
     // Find the index of the maximum value in actualOutputs
     const finalOutputIndex = actualOutputs.indexOf(Math.max(...actualOutputs));
