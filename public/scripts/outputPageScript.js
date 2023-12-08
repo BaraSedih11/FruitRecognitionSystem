@@ -239,11 +239,19 @@ function applyActivationFunctionForHidden(activationFunctionForHidden, x){
 
 function applyActivationFunctionForOutput(activationFunctionForOutput, x, outputs) {
     if (activationFunctionForOutput === 'Softmax') {
-        
+        // Calculate softmax probabilities
+        const expValues = outputs.map(output => Math.exp(output));
+        const sumExpValues = expValues.reduce((sum, expValue) => sum + expValue, 0);
 
+        const softmaxOutputs = expValues.map(expValue => expValue / sumExpValues);
 
-        
-    } else if (activationFunctionForOutput === 'Sigmoid') {
+        // Calculate the derivative of softmax
+        const softmaxDerivatives = softmaxOutputs.map((softmax_i, i) => {
+            return softmax_i * (i === x ? 1 - softmax_i : -softmax_i);
+        });
+
+        return softmaxDerivatives;
+    }  else if (activationFunctionForOutput === 'Sigmoid') {
         return 1 / (1 + Math.exp(-x));
     } else {
         console.error('Invalid activation function for output layer');
@@ -289,7 +297,6 @@ function Activation(inputRow, weightsForHidden, weightsForOutput, thresholdsForH
         layer2Outputs[y] = output;        
     }
 
-    // Apply softmax activation for the output layer
     actualOutputs = applyActivationFunctionForOutput(activationFunctionForOutput, 0, layer2Outputs);
 
     // Apply softmax to the output layer
