@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fruit Recognition</title>
+    <link rel="stylesheet" href="../styles/inputPageStyle.css">
+    <script src="https://cdn.rawgit.com/BrainJS/brain.js/1.0.0/browser.js"></script>
+    <script src="https://unpkg.com/brain.js"></script>
+</head>
+<body>
+    <header class="header">
+        <a href="" class="logo">Fruit Recognition Using Neural Network Classifier</a>
+
+        <nav class="navbar">
+            <a href="/main/input" class="selected" style="color: black; font-weight: 700;">Input</a>
+            <a href="/main/output" onclick="sendDataToServer()">Output</a>
+        </nav>
+    </header>
+    <main>
+        <div class="container">
+            <div class="form-container">
+                <div class="data-entry" style="flex: 1;">
+                    <h2>Enter Data</h2>
+                    <br>
+                    <div id="file-entry" >
+                        <label for="data-file">Upload Data File (.txt):</label>
+                        <input type="file" id="data-file" accept=".txt">
+                    </div>
+                    
+                </div>
+
+                <div id="training-config">
+                    <h2>Training Configuration</h2>
+                    <br>
+                    <label for="learning-rate">Learning Rate:</label>
+                    <input type="number" step="0.01" id="learning-rate" value="0.01">
+
+                    <label for="max-epochs">Maximum Number of Epochs:</label>
+                    <input type="number" id="max-epochs" min="1" value="100">
+
+                    <label for="neurons">Number of Nueorons:</label>
+                    <input type="number" step="1" min="1" id="neurons" value="2">
+                    
+                    <label for="activationFunctionForHidden">Activation Function For Hidden Layer:</label>
+                    <select name="activationFunctionForHidden" id="activationFunctionForHidden">
+                        <option value="relU">RelU</option>
+                        <option value="sigmoid">Sigmoid</option>
+                        <option value="tanh">Tanh</option>
+                    </select>
+                    <label for="activationFunctionForOutput">Activation Function For Output Layer:</label>
+                    <select name="activationFunctionForOutput" id="activationFunctionForOutput">
+                        <option value="softmax">Softmax</option>
+                        <option value="sigmoid">Sigmoid</option>
+                    </select>
+
+                    <button id="submit">Train Neural Network</button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script src="../scripts/inputPageScript.js"></script>
+</body>
+</html>

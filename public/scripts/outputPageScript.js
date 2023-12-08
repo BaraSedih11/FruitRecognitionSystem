@@ -357,11 +357,3 @@ function WeightTraining(inputRow, weightsForHidden, weightsForOutput, actualOutp
 
     return totalError;
 }
-
-
-
-
-
-
-
-
