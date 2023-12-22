@@ -9,7 +9,6 @@ let errorCriterion = 0.0001; // or any other small positive value
 document.addEventListener('DOMContentLoaded', function () {
     console.log('DOMContentLoaded event fired');
     const rawData = document.getElementById('sendedData').textContent;
-    console.log('Raw data:', rawData);
 
     try {
         const parsedData = JSON.parse(rawData);
@@ -67,23 +66,46 @@ function processingOutput() {
     let correctPredictions = 0;
     let trainedData = [];
 
-    // Step 1: Initialization
-    let {weightsForHidden, weightsForOutput, thresholdsForHidden, thresholdsForOutput} = Initialization(numberOfNeurons);
+    let weightsForHidden = [];
+    let weightsForOutput = [];
+    let thresholdsForHidden = [];
+    let thresholdsForOutput = [];
 
     while (epoch < epochs) {
         totalError = 0;
-
+        console.log(`Epoch: ${epoch}`);
         for (let dataRow = 0; dataRow < inputData.length; dataRow++) {
+
+            if(epoch == 0){
+                // Step 1: Initialization
+                let  InitializeData = Initialization(numberOfNeurons);
+                weightsForHidden[dataRow] = InitializeData.weightsForHidden;
+                weightsForOutput[dataRow] = InitializeData.weightsForOutput;
+                thresholdsForHidden[dataRow] = InitializeData.thresholdsForHidden;
+                thresholdsForOutput[dataRow] = InitializeData.thresholdsForOutput;
+            }
+            
             let expectedOutput = getExpectedOutputFromDataRow(inputData[dataRow]);
             expectedOutput = [expectedOutput];
 
             // Step 2: Forward Pass
-            let layer1Outputs = Activation(inputData[dataRow], weightsForHidden, weightsForOutput, thresholdsForHidden, thresholdsForOutput, activationFunctionForHidden, activationFunctionForOutput);
+            let layer1Outputs = Activation(inputData[dataRow], weightsForHidden[dataRow], weightsForOutput[dataRow], thresholdsForHidden[dataRow], thresholdsForOutput[dataRow], activationFunctionForHidden, activationFunctionForOutput);
+            
+            // Print relevant values for debugging
+            console.log('Actual Outputs:', layer1Outputs.actualOutput);
+            console.log(JSON.stringify(weightsForHidden[dataRow]));
+            console.log(JSON.stringify(weightsForOutput[dataRow]));
 
             // Step 3: Backpropagation and Weight Update
-            totalError += WeightTraining(inputData[dataRow], weightsForHidden, weightsForOutput, layer1Outputs.actualOutput, getExpectedOutput(), layer1Outputs.layer1Outputs);
+            let BackpropagationObj = WeightTraining(inputData[dataRow], weightsForHidden[dataRow], weightsForOutput[dataRow], layer1Outputs.actualOutput, getExpectedOutput(), layer1Outputs.layer1Outputs, layer1Outputs.layer2Outputs);
+
+            totalError += BackpropagationObj.totalError;
+            weightsForHidden[dataRow] = BackpropagationObj.weightsForHidden;
+            weightsForOutput[dataRow] = BackpropagationObj.weightsForOutput;
 
             console.log('Total Error:', totalError);
+            console.log('Weights for Hidden:', JSON.stringify(weightsForHidden[dataRow]));
+            console.log('Weights for Output:', JSON.stringify(weightsForOutput[dataRow]));
             console.log(layer1Outputs.actualOutput);
 
             if (epoch === epochs - 1) {
@@ -105,11 +127,7 @@ function processingOutput() {
         epoch++;
     }
 
-    console.log('Bedroooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo');
-
     console.log(trainedData);
-
-    console.log('kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk');
 
     for (let dataRow = 0; dataRow < inputData.length; dataRow++) {
         const output = trainedData[dataRow];
@@ -120,10 +138,6 @@ function processingOutput() {
         if(output === expectedOutput) correctPredictions++;
 
     }
-        
-    // here to test
-    console.log(correctPredictions);
-    console.log(inputData.length);
 
     let accuracy = correctPredictions/inputData.length;
     console.log(`Epoch ${epoch} - Accuracy: ${accuracy*100}%`);
@@ -237,36 +251,34 @@ function applyActivationFunctionForHidden(activationFunctionForHidden, x){
     }
 }
 
-function applyActivationFunctionForOutput(activationFunctionForOutput, x, outputs) {
-    if (activationFunctionForOutput === 'Softmax') {
-        // Calculate softmax probabilities
-        const expValues = outputs.map(output => Math.exp(output));
-        const sumExpValues = expValues.reduce((sum, expValue) => sum + expValue, 0);
+function applySoftmaxForOutput(outputs) {
+    // Calculate softmax probabilities using a more stable approach
+    const maxOutput = Math.max(...outputs);
+    const expValues = outputs.map(output => Math.exp(output - maxOutput));
+    const sumExpValues = expValues.reduce((sum, expValue) => sum + expValue, 0);
 
-        const softmaxOutputs = expValues.map(expValue => expValue / sumExpValues);
+    const softmaxOutputs = expValues.map(expValue => expValue / sumExpValues);
 
-        // Calculate the derivative of softmax
-        const softmaxDerivatives = softmaxOutputs.map((softmax_i, i) => {
-            return softmax_i * (i === x ? 1 - softmax_i : -softmax_i);
-        });
+    // Calculate the derivative of softmax
+    const softmaxDerivatives = softmaxOutputs.map((softmax_i, i) => {
+        return softmax_i * (i === outputs[i] ? 1 - softmax_i : -softmax_i);
+    });
 
-        return softmaxDerivatives;
-    }  else if (activationFunctionForOutput === 'Sigmoid') {
-        return 1 / (1 + Math.exp(-x));
-    } else {
-        console.error('Invalid activation function for output layer');
-    }
+    return softmaxDerivatives;
 }
 
+function applySigmoidForOutput(output){
+    return (1 / (1 + Math.exp(-output)));
+}
 
 function getOutputForHidden(inputRow, weightsForHidden, thresholdsForHidden, activationFunctionForHidden, i){
     let sum = 0;
 
-    let x1 = getColorValue(inputRow.input[1]);
-    let x2 = getSweetnessValue(inputRow.input[0]);
+    let x1 = getSweetnessValue(inputRow.input[0]);
+    let x2 = getColorValue(inputRow.input[1]);
 
-    sum += (x1 * weightsForHidden[0][i]) + (x2 * weightsForHidden[1][i]) - thresholdsForHidden[i];
-    return applyActivationFunctionForHidden(activationFunctionForHidden, sum);
+    sum += (x1 * weightsForHidden[0][i]) + (x2 * weightsForHidden[1][i]) + thresholdsForHidden[i];
+    return applyActivationFunctionForHidden(activationFunctionForHidden, sum);    
 }
 
 function getOutputForOutput(input, weightsForOutput, threshold, y){
@@ -275,7 +287,7 @@ function getOutputForOutput(input, weightsForOutput, threshold, y){
     for (let i = 0 ; i < input.length ; i++){
         sum  += input[i] * weightsForOutput[i][y];
     }
-    sum -= threshold;
+    sum += threshold;
     
     return sum;
 }
@@ -284,7 +296,7 @@ function Activation(inputRow, weightsForHidden, weightsForOutput, thresholdsForH
     let layer1Outputs = [];
     let layer2Outputs = [];
     let actualOutputs = [];
-
+    
     // Layer1
     for (let neuron = 0; neuron < numberOfNeurons; neuron++) {
         let output = getOutputForHidden(inputRow, weightsForHidden, thresholdsForHidden, activationFunctionForHidden, neuron);
@@ -294,10 +306,18 @@ function Activation(inputRow, weightsForHidden, weightsForOutput, thresholdsForH
     // Layer2
     for (let y = 0; y < 3; y++) {
         let output = getOutputForOutput(layer1Outputs, weightsForOutput, thresholdsForOutput[y], y);
-        layer2Outputs[y] = output;        
+        layer2Outputs[y] = output;
     }
 
-    actualOutputs = applyActivationFunctionForOutput(activationFunctionForOutput, 0, layer2Outputs);
+    if(activationFunctionForOutput === 'Softmax'){
+        actualOutputs = applySoftmaxForOutput(layer2Outputs);
+    } else if(activationFunctionForOutput === 'Sigmoid'){
+        for(let y = 0 ; y < 3 ; y++){
+            actualOutputs[y] = applySigmoidForOutput(layer2Outputs[y]);
+        }
+    } else {
+        console.error('Invalid activation function for output layer');
+    }
 
     // Find the index of the maximum value in actualOutputs
     const finalOutputIndex = actualOutputs.indexOf(Math.max(...actualOutputs));
@@ -308,13 +328,12 @@ function Activation(inputRow, weightsForHidden, weightsForOutput, thresholdsForH
     return { actualOutput: actualOutputs, finalOutput: finalOutput, layer1Outputs: layer1Outputs, layer2Outputs: layer2Outputs };
 }
 
-function WeightTraining(inputRow, weightsForHidden, weightsForOutput, actualOutputs, expectedOutput, layer1Outputs) {
+function WeightTraining(inputRow, weightsForHidden, weightsForOutput, actualOutputs, expectedOutput, layer1Outputs, layer2Outputs) {
     let totalError = 0;
-    const epsilon = 1e-10;
 
     // Calculate the error gradients for the output layer
     let gradientErrorsOutput = [];
-    for (let k = 0; k < expectedOutput.length; k++) {
+    for (let k = 0; k < 3; k++) { 
         let ek = expectedOutput[k] - actualOutputs[k];
 
         // Check for NaN and infinity values in the output
@@ -330,15 +349,17 @@ function WeightTraining(inputRow, weightsForHidden, weightsForOutput, actualOutp
         // Calculate and update weights for output neurons
         for (let j = 0; j < numberOfNeurons; j++) {
             // Check for division by small numbers
-            let deltaWjk = Math.abs(layer1Outputs[j]) > epsilon ? learningRate * layer1Outputs[j] * gradientErrorsOutput[k] : 0;
+            let deltaWjk = learningRate * layer2Outputs[k] * gradientErrorsOutput[k];
 
             console.log(`Weight Update (Output): W${j}${k} += ${deltaWjk}`);
             weightsForOutput[j][k] += deltaWjk;
+            console.log(`Weights for output after modification: ${weightsForOutput[j][k]}`);
         }
 
         // Accumulate the total error
-        totalError += Math.abs(ek);
+        totalError = Math.abs(ek);
     }
+
 
     // Calculate the error gradients for the hidden layer
     for (let i = 0; i < numberOfNeurons; i++) {
@@ -351,13 +372,21 @@ function WeightTraining(inputRow, weightsForHidden, weightsForOutput, actualOutp
         let gradientErrori = layer1Outputs[i] * (1 - layer1Outputs[i]) * sumGradientErrorsOutput;
 
         // Update weights for hidden neurons
-        for (let j = 0; j < inputRow.length; j++) {
-            let deltaWij = learningRate * inputRow[j] * gradientErrori;
+        for (let j = 0; j < 2; j++) {
+            console.log('Tesssssssssss');
+            let x;
+            if(j == 0){
+                x = getSweetnessValue(inputRow.input[0]);
+            } else{
+                x = getColorValue(inputRow.input[1]);
+            }
+            let deltaWij = learningRate * x * gradientErrori;
 
             console.log(`Weight Update (Hidden): W${j}${i} += ${deltaWij}`);
             weightsForHidden[j][i] += deltaWij;
+            console.log(`Weights for hidden after modification: ${weightsForHidden[j][i]}`);
         }
     }
 
-    return totalError;
+    return {totalError, weightsForHidden, weightsForOutput};
 }
