@@ -5,6 +5,15 @@ let numberOfEpochs = null;
 let activationFunctionForHidden = null;
 let activationFunctionForOutput = null;
 let errorCriterion = 0.0001; // or any other small positive value
+let totalError;
+let epoch = 0;
+let correctPredictions = 0;
+let trainedData = [];
+
+let weightsForHidden = [];
+let weightsForOutput = [];
+let thresholdsForHidden = [];
+let thresholdsForOutput = [];
 
 document.addEventListener('DOMContentLoaded', function () {
     console.log('DOMContentLoaded event fired');
@@ -51,25 +60,29 @@ function updateOutputContainer() {
 
     // Update the container only if data is available
     outputContainer.innerHTML = `
-        <div style="display: flex; align-items: center;">
-            <div class="loading"></div>
-            <p style="font-size: 24px; text-align: center;">Data is available. Processing output...</p>
-        </div>`;
+    <div style="align-items: center;">
+        <p style="font-size: 24px; text-align: center;">Done Learning. Testing output...</p>
+        <br>
+        <p>Enter data to test</p>
+        <input type="number" min="1" max="10" id="sweetnessTest" placeholder="Sweetness" style="margin-right: 10px;">
+        <br>
+        <select id="colorTest" style="margin-right: 10px;">
+            <option value="green">Green</option>
+            <option value="yellow">Yellow</option>
+            <option value="red">Red</option>
+            <option value="orange">Orange</option>
+        </select>
+        <button onclick="testData()">Test Data</button>
+    </div>`;
     processingOutput();
+}
+
+function testData(){
+    
 }
 
 function processingOutput() {
     console.log('Processing output...');
-
-    let totalError;
-    let epoch = 0;
-    let correctPredictions = 0;
-    let trainedData = [];
-
-    let weightsForHidden = [];
-    let weightsForOutput = [];
-    let thresholdsForHidden = [];
-    let thresholdsForOutput = [];
 
     while (epoch < epochs) {
         totalError = 0;
@@ -97,7 +110,7 @@ function processingOutput() {
             console.log(JSON.stringify(weightsForOutput[dataRow]));
 
             // Step 3: Backpropagation and Weight Update
-            let BackpropagationObj = WeightTraining(inputData[dataRow], weightsForHidden[dataRow], weightsForOutput[dataRow], layer1Outputs.actualOutput, getExpectedOutput(), layer1Outputs.layer1Outputs, layer1Outputs.layer2Outputs);
+            let BackpropagationObj = WeightTraining(inputData[dataRow], weightsForHidden[dataRow], weightsForOutput[dataRow], layer1Outputs.actualOutput, getExpectedOutput(inputData[dataRow].output), layer1Outputs.layer1Outputs, layer1Outputs.layer2Outputs);
 
             totalError += BackpropagationObj.totalError;
             weightsForHidden[dataRow] = BackpropagationObj.weightsForHidden;
@@ -143,12 +156,11 @@ function processingOutput() {
     console.log(`Epoch ${epoch} - Accuracy: ${accuracy*100}%`);
 }
 
-
-function getExpectedOutput(){
+function getExpectedOutput(dataOutput){
     let output = [];
-    output[0] = 0;
+    output[0] = 0.2;
     output[1] = 0.5;
-    output[2] = 1;
+    output[2] = 0.8;
     return output;
 }
 
@@ -226,9 +238,10 @@ function Initialization(neuronsSize){
 }
 
 function getColorValue(color){
-    if(color === 'red') return 1;
-    else if(color === 'orange') return 2;
-    else if(color === 'yellow') return 3;
+    if(color === 'red') return 0.2;
+    else if(color === 'green') return 0.25;
+    else if(color === 'orange') return 0.6;
+    else if(color === 'yellow') return 0.9;
 }
 
 function getSweetnessValue(sweetness){
@@ -251,24 +264,29 @@ function applyActivationFunctionForHidden(activationFunctionForHidden, x){
     }
 }
 
-function applySoftmaxForOutput(outputs) {
-    // Calculate softmax probabilities using a more stable approach
-    const maxOutput = Math.max(...outputs);
-    const expValues = outputs.map(output => Math.exp(output - maxOutput));
-    const sumExpValues = expValues.reduce((sum, expValue) => sum + expValue, 0);
+function applySoftmaxForOutput(output) {
+    const expOutput = output.map(Math.exp);
+    const sumExp = expOutput.reduce((acc, val) => acc + val, 0);
+    const softmaxResult = expOutput.map(value => value / sumExp);
+    return softmaxResult;
+}  
 
-    const softmaxOutputs = expValues.map(expValue => expValue / sumExpValues);
-
-    // Calculate the derivative of softmax
-    const softmaxDerivatives = softmaxOutputs.map((softmax_i, i) => {
-        return softmax_i * (i === outputs[i] ? 1 - softmax_i : -softmax_i);
-    });
-
-    return softmaxDerivatives;
+function softmaxDerivative(output){
+    let softmaxValue = applySoftmaxForOutput(output);
+    
+    for(let i = 0 ; i < output.length ; i++){
+        output[i] = softmaxValue * (1 - softmaxValue);
+    }
+    return output;
 }
 
 function applySigmoidForOutput(output){
-    return (1 / (1 + Math.exp(-output)));
+    output = (1/ (1 + Math.exp(-output)));
+    return output * (1 - output);
+}
+
+function applyTanhForOutput(output){
+    return Math.tanh(output);
 }
 
 function getOutputForHidden(inputRow, weightsForHidden, thresholdsForHidden, activationFunctionForHidden, i){
@@ -390,3 +408,4 @@ function WeightTraining(inputRow, weightsForHidden, weightsForOutput, actualOutp
 
     return {totalError, weightsForHidden, weightsForOutput};
 }
+ 
