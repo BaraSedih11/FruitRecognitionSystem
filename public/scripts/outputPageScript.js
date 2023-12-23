@@ -6,14 +6,17 @@ let activationFunctionForHidden = null;
 let activationFunctionForOutput = null;
 let errorCriterion = 0.0001; // or any other small positive value
 let totalError;
+let crossEntropy;
 let epoch = 0;
 let correctPredictions = 0;
 let trainedData = [];
+let accuracy ;
+let classError ;
 
-let weightsForHidden = [];
-let weightsForOutput = [];
-let thresholdsForHidden = [];
-let thresholdsForOutput = [];
+let weightsForHidden ;
+let weightsForOutput ;
+let thresholdsForHidden;
+let thresholdsForOutput;
 
 document.addEventListener('DOMContentLoaded', function () {
     console.log('DOMContentLoaded event fired');
@@ -63,6 +66,11 @@ function updateOutputContainer() {
     <div style="align-items: center;">
         <p style="font-size: 24px; text-align: center;">Done Learning. Testing output...</p>
         <br>
+        <p id="accuracy"></p>
+        <p id="classError"></p>
+        <p id="mse"></p>
+        <p id="crossEntropy"></p>
+        <br>
         <p>Enter data to test</p>
         <input type="number" min="1" max="10" id="sweetnessTest" placeholder="Sweetness" style="margin-right: 10px;">
         <br>
@@ -73,53 +81,103 @@ function updateOutputContainer() {
             <option value="orange">Orange</option>
         </select>
         <button onclick="testData()">Test Data</button>
+        <br>
+        <br>
+        <p id="result"></p>
+        <br>
+        <img id="result-img"></img>
     </div>`;
     processingOutput();
 }
 
 function testData(){
+    console.log('Testing data...');
+
+    let sweetness = document.getElementById('sweetnessTest').value;
+    let color = document.getElementById('colorTest').value;
+
+    let testObj = {
+        input: [
+            sweetness,
+            color
+        ],
+    }
     
+    let testOutput = Activation(testObj);
+
+    console.log('Tested Outputs:', testOutput.actualOutput);
+
+    let actualOutput = testOutput.actualOutput[0];
+    let index = 0;
+
+    if(actualOutput < testOutput.actualOutput[1]) {
+        index = 1;
+        actualOutput = testOutput.actualOutput[1];
+    }
+    if(actualOutput < testOutput.actualOutput[2]){
+        index = 2;
+        actualOutput = testOutput.actualOutput[2];
+    } 
+    
+        
+
+    console.log(index);
+    let result = getFinalOutput(index);
+
+    document.getElementById('result').textContent = `Testing output: ${result}`;
+
+    let img = document.getElementById('result-img');
+    img.width = 50;
+    img.height = 50;
+    if(result === 'apple'){
+        if(color === 'red')
+            img.src = '../images/apple.png';
+        else if(color === 'green'){
+            img.src = '../images/greenApple.png';
+            img.width = 70;
+            img.height = 70;
+        }
+        else
+            img.src = '../images/yellowApple.png';
+    } else if(result === 'orange'){
+        img.src = '../images/orange.png';
+    } else if(result === 'banana'){
+        img.src = '../images/banana.png';
+    }
+
 }
 
 function processingOutput() {
     console.log('Processing output...');
 
+    // Step 1: Initialization
+    let InitializeData = Initialization(numberOfNeurons);
+    weightsForHidden = InitializeData.weightsForHidden;
+    weightsForOutput = InitializeData.weightsForOutput;
+    thresholdsForHidden = InitializeData.thresholdsForHidden;
+    thresholdsForOutput = InitializeData.thresholdsForOutput;
+
     while (epoch < epochs) {
         totalError = 0;
+        crossEntropy = 0;
+        accuracy = 0;
+        classError = 1;
         console.log(`Epoch: ${epoch}`);
+
         for (let dataRow = 0; dataRow < inputData.length; dataRow++) {
 
-            if(epoch == 0){
-                // Step 1: Initialization
-                let  InitializeData = Initialization(numberOfNeurons);
-                weightsForHidden[dataRow] = InitializeData.weightsForHidden;
-                weightsForOutput[dataRow] = InitializeData.weightsForOutput;
-                thresholdsForHidden[dataRow] = InitializeData.thresholdsForHidden;
-                thresholdsForOutput[dataRow] = InitializeData.thresholdsForOutput;
-            }
-            
-            let expectedOutput = getExpectedOutputFromDataRow(inputData[dataRow]);
-            expectedOutput = [expectedOutput];
-
             // Step 2: Forward Pass
-            let layer1Outputs = Activation(inputData[dataRow], weightsForHidden[dataRow], weightsForOutput[dataRow], thresholdsForHidden[dataRow], thresholdsForOutput[dataRow], activationFunctionForHidden, activationFunctionForOutput);
-            
-            // Print relevant values for debugging
-            console.log('Actual Outputs:', layer1Outputs.actualOutput);
-            console.log(JSON.stringify(weightsForHidden[dataRow]));
-            console.log(JSON.stringify(weightsForOutput[dataRow]));
+            let layer1Outputs = Activation(inputData[dataRow]);
 
             // Step 3: Backpropagation and Weight Update
-            let BackpropagationObj = WeightTraining(inputData[dataRow], weightsForHidden[dataRow], weightsForOutput[dataRow], layer1Outputs.actualOutput, getExpectedOutput(inputData[dataRow].output), layer1Outputs.layer1Outputs, layer1Outputs.layer2Outputs);
+            let BackpropagationObj = WeightTraining(inputData[dataRow], layer1Outputs.actualOutput, getExpectedOutput(inputData[dataRow].output), layer1Outputs.layer1Outputs, layer1Outputs.layer2Outputs);
 
             totalError += BackpropagationObj.totalError;
-            weightsForHidden[dataRow] = BackpropagationObj.weightsForHidden;
-            weightsForOutput[dataRow] = BackpropagationObj.weightsForOutput;
-
-            console.log('Total Error:', totalError);
-            console.log('Weights for Hidden:', JSON.stringify(weightsForHidden[dataRow]));
-            console.log('Weights for Output:', JSON.stringify(weightsForOutput[dataRow]));
-            console.log(layer1Outputs.actualOutput);
+            crossEntropy += BackpropagationObj.crossEntropy;
+            weightsForHidden = BackpropagationObj.weightsForHidden;
+            weightsForOutput = BackpropagationObj.weightsForOutput;
+            thresholdsForHidden = BackpropagationObj.thresholdsForHidden;
+            thresholdsForOutput = BackpropagationObj.thresholdsForOutput;
 
             if (epoch === epochs - 1) {
                 let actualOutputs = layer1Outputs.actualOutput;
@@ -130,37 +188,52 @@ function processingOutput() {
             }
         } 
 
+        for (let index = 0; index < inputData.length ; index++){
+            const output = trainedData[index];
+            let expectedOutputValue = getExpectedOutputFromDataRow(inputData[index]);
+            if(output === expectedOutputValue) correctPredictions++;
+        }
+        
+        accuracy = correctPredictions/inputData.length;
+        classError = 1 - accuracy;
+
+        totalError /= inputData.length; //mse
+        crossEntropy /= inputData.length;
+
         // Check convergence criterion
-        if (totalError <= errorCriterion) {
+        if (classError <= errorCriterion) {
             console.log('Converged. Stopping training.');
             break;
         }
 
-
         epoch++;
     }
 
-    console.log(trainedData);
+    console.log(`Epoch ${epoch}`);
 
-    for (let dataRow = 0; dataRow < inputData.length; dataRow++) {
-        const output = trainedData[dataRow];
-        let expectedOutput = getExpectedOutputFromDataRow(inputData[dataRow]);
-
-        console.log(output);
-        console.log(expectedOutput);
-        if(output === expectedOutput) correctPredictions++;
-
-    }
-
-    let accuracy = correctPredictions/inputData.length;
-    console.log(`Epoch ${epoch} - Accuracy: ${accuracy*100}%`);
+    document.getElementById('accuracy').textContent = `Accuracy: ${accuracy*100}%`;
+    document.getElementById('classError').textContent = `Classification Error: ${classError}`;
+    document.getElementById('mse').textContent = `MSE: ${totalError}`;
+    document.getElementById('crossEntropy').textContent = `Cross-Entropy: ${crossEntropy}`; 
 }
 
 function getExpectedOutput(dataOutput){
     let output = [];
-    output[0] = 0.2;
-    output[1] = 0.5;
-    output[2] = 0.8;
+    if(dataOutput === 'apple'){
+        output[0] = 1;
+        output[1] = 0;
+        output[2] = 0;
+    }
+    if(dataOutput === 'orange'){
+        output[0] = 0;
+        output[1] = 1;
+        output[2] = 0;
+    }
+    if(dataOutput === 'banana'){
+        output[0] = 0;
+        output[1] = 0;
+        output[2] = 1;
+    }
     return output;
 }
 
@@ -195,7 +268,6 @@ function initializeWeights(rows, columns, Fi) {
                 randomWeight = Math.round((Math.random() * (2 * range) - range) * 10) / 10;
             }
 
-            // Assign the non-zero random weight to the array element
             weights[i][j] = randomWeight;
         }
     }
@@ -218,7 +290,6 @@ function initializeThresholds(inputSize, neuronsSize) {
             randomThreshold = Math.round((Math.random() * (2 * range) - range) * 10) / 10;
         }
 
-        // Assign the non-zero random threshold to the array element
         thresholds[i] = randomThreshold;
     }
 
@@ -238,10 +309,10 @@ function Initialization(neuronsSize){
 }
 
 function getColorValue(color){
-    if(color === 'red') return 0.2;
-    else if(color === 'green') return 0.25;
-    else if(color === 'orange') return 0.6;
-    else if(color === 'yellow') return 0.9;
+    if(color === 'red') return 0;
+    else if(color === 'green') return 0.05;
+    else if(color === 'orange') return 1;
+    else if(color === 'yellow') return 0.5;
 }
 
 function getSweetnessValue(sweetness){
@@ -249,7 +320,6 @@ function getSweetnessValue(sweetness){
 }
 
 function applyActivationFunctionForHidden(activationFunctionForHidden, x){
-
     if(activationFunctionForHidden === 'RelU'){
         return Math.max(0, x);
     } 
@@ -310,7 +380,7 @@ function getOutputForOutput(input, weightsForOutput, threshold, y){
     return sum;
 }
 
-function Activation(inputRow, weightsForHidden, weightsForOutput, thresholdsForHidden, thresholdsForOutput, activationFunctionForHidden, activationFunctionForOutput) {
+function Activation(inputRow) {
     let layer1Outputs = [];
     let layer2Outputs = [];
     let actualOutputs = [];
@@ -346,36 +416,44 @@ function Activation(inputRow, weightsForHidden, weightsForOutput, thresholdsForH
     return { actualOutput: actualOutputs, finalOutput: finalOutput, layer1Outputs: layer1Outputs, layer2Outputs: layer2Outputs };
 }
 
-function WeightTraining(inputRow, weightsForHidden, weightsForOutput, actualOutputs, expectedOutput, layer1Outputs, layer2Outputs) {
+function WeightTraining(inputRow, actualOutputs, expectedOutput, layer1Outputs, layer2Outputs) {
     let totalError = 0;
+    let crossEntropy = 0;
 
     // Calculate the error gradients for the output layer
     let gradientErrorsOutput = [];
     for (let k = 0; k < 3; k++) { 
         let ek = expectedOutput[k] - actualOutputs[k];
+        let ek2 = Math.pow(ek, 2);
+        crossEntropy += expectedOutput[k] * Math.log(actualOutputs[k]);
 
         // Check for NaN and infinity values in the output
         if (isNaN(actualOutputs[k]) || !isFinite(actualOutputs[k])) {
             console.error(`Invalid output encountered at output layer (neuron ${k}). Check for extreme values. Actual Output: ${actualOutputs[k]}`);
-            return; // You may choose to return a different value in case of an invalid output.
+            return; 
         }
 
-        // Calculate the gradient error and store it
         let gradientErrork = actualOutputs[k] * (1 - actualOutputs[k]) * ek;
         gradientErrorsOutput.push(gradientErrork);
 
-        // Calculate and update weights for output neurons
         for (let j = 0; j < numberOfNeurons; j++) {
-            // Check for division by small numbers
             let deltaWjk = learningRate * layer2Outputs[k] * gradientErrorsOutput[k];
 
-            console.log(`Weight Update (Output): W${j}${k} += ${deltaWjk}`);
             weightsForOutput[j][k] += deltaWjk;
-            console.log(`Weights for output after modification: ${weightsForOutput[j][k]}`);
         }
 
-        // Accumulate the total error
-        totalError = Math.abs(ek);
+        let thresholdSign;
+        if(thresholdsForOutput[k]){
+            thresholdSign = 1;
+        } else {
+            thresholdSign = -1;
+        }
+
+        let deltaTheta = learningRate * thresholdSign * gradientErrork;
+
+        thresholdsForOutput[k] += deltaTheta;
+
+        totalError += ek2;
     }
 
 
@@ -386,12 +464,9 @@ function WeightTraining(inputRow, weightsForHidden, weightsForOutput, actualOutp
             sumGradientErrorsOutput += gradientErrorsOutput[k] * weightsForOutput[i][k];
         }
 
-        // Calculate the gradient error
         let gradientErrori = layer1Outputs[i] * (1 - layer1Outputs[i]) * sumGradientErrorsOutput;
 
-        // Update weights for hidden neurons
         for (let j = 0; j < 2; j++) {
-            console.log('Tesssssssssss');
             let x;
             if(j == 0){
                 x = getSweetnessValue(inputRow.input[0]);
@@ -400,12 +475,21 @@ function WeightTraining(inputRow, weightsForHidden, weightsForOutput, actualOutp
             }
             let deltaWij = learningRate * x * gradientErrori;
 
-            console.log(`Weight Update (Hidden): W${j}${i} += ${deltaWij}`);
             weightsForHidden[j][i] += deltaWij;
-            console.log(`Weights for hidden after modification: ${weightsForHidden[j][i]}`);
         }
+
+        let thresholdSign;
+        if(thresholdsForHidden[i]){
+            thresholdSign = 1;
+        } else {
+            thresholdSign = -1;
+        }
+
+        let deltaTheta = learningRate * thresholdSign * gradientErrori;
+        thresholdsForHidden[i] += deltaTheta;
     }
 
-    return {totalError, weightsForHidden, weightsForOutput};
+    crossEntropy *= -1;
+    return {totalError, crossEntropy, weightsForHidden, weightsForOutput, thresholdsForHidden, thresholdsForOutput};
 }
  

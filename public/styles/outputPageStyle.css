@@ -198,3 +198,7 @@ button:active {
   100% { transform: rotate(360deg); }
 }
 
+#result-img{
+  width: 20;
+  height: auto;
+}
