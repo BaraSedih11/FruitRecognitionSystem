@@ -54,7 +54,7 @@ node app.js
 
 ## Dataset
 
-The system is trained on a dataset containing images of various fruits. The dataset used can be found [here](link-to-dataset).
+The system is trained on a dataset containing images of various fruits. The dataset used can be found [here](https://drive.google.com/file/d/1CX9-T6da9g1IIgfYGRbRURjkD9pLzPCd/view?usp=sharing).
 
 ## Contributing
 
