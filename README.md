@@ -32,17 +32,14 @@ This repository contains the code for a Fruit Recognition System. The system is 
 1. Clone this repository:
 ```
 git clone https://github.com/BaraSedih11/FruitRecognitionSystem.git
-
 ```
 2. Navigate to the project directory:
 ```
 cd FruitRecognitionSystem
-
 ```
 3. Install dependencies:
 ```
 npm install
-
 ```
 
 ### Running the System
@@ -50,7 +47,6 @@ npm install
 1. Start the server:
 ```
 node app.js
-
 ```
 2. Open your web browser and navigate to `http://localhost:3000`.
 
