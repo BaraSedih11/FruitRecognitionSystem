@@ -60,3 +60,9 @@ The system is trained on a dataset containing images of various fruits. The data
 
 Contributions are welcome! If you'd like to contribute to this project, please fork the repository and submit a pull request.
 
+# Contact
+For any inquiries or issues regarding the project, feel free to contact the project owner: BaraSedih11.
+
+## Demo Video
+[![Demo Video](https://github.com/BaraSedih11/FruitRecognitionSystem/assets/98843912/1caca5d3-c919-4e8b-9977-92657cc724b5)]()
+
