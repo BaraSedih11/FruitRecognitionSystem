@@ -1,5 +1,16 @@
 <div align=center>
   <img src="https://github.com/BaraSedih11/FruitRecognitionSystem/assets/98843912/df1478c4-5b47-41f1-b982-2722eb38337a" width=500px />
+
+  <br />
+  <br />
+  
+   ![GitHub repo size](https://img.shields.io/github/repo-size/BaraSedih11/FruitRecognitionSystem) 
+   ![GitHub repo file count (file type)](https://img.shields.io/github/directory-file-count/BaraSedih11/FruitRecognitionSystem) 
+   ![GitHub last commit (branch)](https://img.shields.io/github/last-commit/BaraSedih11/FruitRecognitionSystem/main)
+   [![Version](https://img.shields.io/badge/version-v1.0.0-blue)](https://github.com/BaraSedih/FruitRecognitionSystem/releases/tag/v1.0.0)
+   [![Contributors](https://img.shields.io/github/contributors/BaraSedih11/FruitRecognitionSystem)](https://github.com/BaraSedih11/FruitRecognitionSystem/graphs/contributors)
+   ![GitHub pull requests](https://img.shields.io/github/issues-pr-raw/BaraSedih11/FruitRecognitionSystem)
+
 </div>
 
 
